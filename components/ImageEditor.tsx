@@ -49,7 +49,9 @@ import {
   ScanEye,
   BrainCircuit,
   Camera,
-  Puzzle
+  Puzzle,
+  Copy,
+  FolderOpen
 } from 'lucide-react';
 import { UserData } from '../types';
 import { GoogleGenAI } from "@google/genai";
@@ -402,6 +404,17 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
         setWarningMsg("Image captured from SketchUp");
         setTimeout(() => setWarningMsg(''), 3000);
     };
+    
+    // Auto-notify SketchUp that app is ready (if running in HtmlDialog)
+    if (window.location.href.includes('sketchup') || true) {
+       // Just in case we are in SketchUp, try to signal readiness
+       // Use a small delay to ensure script context is ready
+       setTimeout(() => {
+         try {
+           (window as any).location.href = 'skp:app_ready';
+         } catch(e) {}
+       }, 1000);
+    }
 
     return () => {
         // Cleanup
@@ -1024,15 +1037,15 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                       <Puzzle className="w-4 h-4" />
                       {t.sketchupExtension}
                    </label>
-                   <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
+                   <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
                       <div className="flex items-start gap-3">
                           <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
                              <Camera className="w-5 h-5" />
                           </div>
                           <div className="space-y-1">
-                             <h4 className="text-sm font-semibold text-white">Connect with SketchUp</h4>
+                             <h4 className="text-sm font-semibold text-white">1. Download & Install</h4>
                              <p className="text-xs text-gray-400 leading-relaxed">
-                                Install the <code>.rb</code> file to enable "Professional AI" toolbar in SketchUp.
+                                Get the <code>.rb</code> file and place it in your SketchUp Plugins folder.
                              </p>
                           </div>
                       </div>
@@ -1040,18 +1053,45 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                       <a 
                         href="/pro_ai_bridge.rb" 
                         download="pro_ai_bridge.rb"
-                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-lg text-xs font-bold text-white transition-all"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-lg text-xs font-bold text-white transition-all shadow-lg"
                       >
                          <Download className="w-4 h-4" />
                          {t.downloadExtension} (.rb)
                       </a>
 
-                      <div className="text-[10px] text-gray-500 space-y-1 pl-1">
-                         <p>1. Download the <code>.rb</code> file.</p>
-                         <p>2. Move it to your SketchUp Plugins folder.</p>
-                         <p>3. Restart SketchUp.</p>
-                         <p>4. Go to <strong>View {'>'} Toolbars</strong> and enable "Professional AI".</p>
+                      <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-gray-300 mb-2">
+                              <FolderOpen className="w-3.5 h-3.5" />
+                              Installation Path:
+                          </div>
+                          <div className="space-y-2">
+                              <div>
+                                  <p className="text-[10px] text-gray-500 uppercase font-bold">Windows</p>
+                                  <code className="block text-[10px] bg-black/30 p-1.5 rounded text-gray-400 mt-1 select-all font-mono break-all">
+                                      %AppData%\SketchUp\SketchUp 20xx\SketchUp\Plugins
+                                  </code>
+                              </div>
+                              <div>
+                                  <p className="text-[10px] text-gray-500 uppercase font-bold">Mac</p>
+                                  <code className="block text-[10px] bg-black/30 p-1.5 rounded text-gray-400 mt-1 select-all font-mono break-all">
+                                      ~/Library/Application Support/SketchUp 20xx/SketchUp/Plugins
+                                  </code>
+                              </div>
+                          </div>
                       </div>
+
+                      <div className="flex items-start gap-3 pt-2">
+                          <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
+                             <Check className="w-5 h-5" />
+                          </div>
+                          <div className="space-y-1">
+                             <h4 className="text-sm font-semibold text-white">2. Enable Toolbar</h4>
+                             <p className="text-xs text-gray-400 leading-relaxed">
+                                Restart SketchUp. Go to <strong>View {'>'} Toolbars</strong> and check <strong>"Professional AI"</strong>.
+                             </p>
+                          </div>
+                      </div>
+
                    </div>
                 </div>
 
