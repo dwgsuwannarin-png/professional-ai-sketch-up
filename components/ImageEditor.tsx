@@ -1107,7 +1107,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                           <div className="space-y-2">
                               <div>
                                   <p className="text-[10px] text-gray-400 leading-relaxed">
-                                      Open SketchUp > <strong>Extensions</strong> > <strong>Extension Manager</strong> > Click <strong>Install Extension</strong> > Select the <code>.rbz</code> file.
+                                      Open SketchUp {'>'} <strong>Extensions</strong> {'>'} <strong>Extension Manager</strong> {'>'} Click <strong>Install Extension</strong> {'>'} Select the <code>.rbz</code> file.
                                   </p>
                               </div>
                           </div>
