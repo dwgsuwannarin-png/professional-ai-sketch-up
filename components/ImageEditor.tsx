@@ -380,6 +380,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
   // --- SKETCHUP INTEGRATION ---
   useEffect(() => {
     // Mount global function for SketchUp
+    // This allows the Ruby script to call "window.receiveSketchUpImage(base64)"
     (window as any).receiveSketchUpImage = (base64Data: string) => {
         // If the data comes with "data:image...", use it directly, else prepend
         const prefix = "data:image/jpeg;base64,";
@@ -394,6 +395,9 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
         setHistory([formattedData]);
         setHistoryStep(0);
         
+        // Switch to the Image Editor tab automatically
+        setShowSettings(false); 
+
         // Optional feedback
         setWarningMsg("Image captured from SketchUp");
         setTimeout(() => setWarningMsg(''), 3000);
@@ -406,7 +410,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
   }, []);
 
   const handleSketchUpCapture = () => {
-      // Trigger SketchUp action
+      // Trigger SketchUp action via skp protocol (legacy support)
+      // or check if running in HtmlDialog context
       window.location.href = 'skp:capture_trigger';
   };
 
@@ -1027,7 +1032,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                           <div className="space-y-1">
                              <h4 className="text-sm font-semibold text-white">Connect with SketchUp</h4>
                              <p className="text-xs text-gray-400 leading-relaxed">
-                                Install our extension to capture views directly from SketchUp into the AI Editor.
+                                Install the <code>.rb</code> file to enable "Professional AI" toolbar in SketchUp.
                              </p>
                           </div>
                       </div>
@@ -1044,7 +1049,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                       <div className="text-[10px] text-gray-500 space-y-1 pl-1">
                          <p>1. Download the <code>.rb</code> file.</p>
                          <p>2. Move it to your SketchUp Plugins folder.</p>
-                         <p>3. Restart SketchUp and look for "Open Professional AI Editor" in Extensions menu.</p>
+                         <p>3. Restart SketchUp.</p>
+                         <p>4. Go to <strong>View {'>'} Toolbars</strong> and enable "Professional AI".</p>
                       </div>
                    </div>
                 </div>
