@@ -51,11 +51,13 @@ import {
   Camera,
   Puzzle,
   Copy,
-  FolderOpen
+  FolderOpen,
+  Package
 } from 'lucide-react';
 import { UserData } from '../types';
 import { GoogleGenAI } from "@google/genai";
 import { db } from '../services/firebase';
+import JSZip from 'jszip';
 
 interface ImageEditorProps {
   user: UserData | null;
@@ -303,6 +305,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
   const [language, setLanguage] = useState<'EN' | 'TH'>('TH');
   const [activeTab, setActiveTab] = useState<'exterior'|'interior'|'plan'|'history'>('exterior');
   const [showSettings, setShowSettings] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
   
   // Generation Mode State
   const [generationMode, setGenerationMode] = useState<'standard' | 'pro'>('standard');
@@ -426,6 +429,43 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
       // Trigger SketchUp action via skp protocol (legacy support)
       // or check if running in HtmlDialog context
       window.location.href = 'skp:capture_trigger';
+  };
+  
+  // --- DOWNLOAD RBZ HANDLER ---
+  const handleDownloadRbz = async () => {
+      setIsZipping(true);
+      try {
+          // Fetch the raw content of the ruby script from public folder
+          // Note: In Vite dev, serving raw files from public works at root path
+          const response = await fetch('/pro_ai_bridge.rb');
+          if (!response.ok) throw new Error("Could not fetch Ruby script");
+          
+          const scriptContent = await response.text();
+          
+          // Create a new Zip file
+          const zip = new JSZip();
+          
+          // Add the script file
+          // SketchUp extensions technically work if the .rb is at the root of the .rbz
+          zip.file("pro_ai_bridge.rb", scriptContent);
+          
+          // Generate the zip blob
+          const blob = await zip.generateAsync({type: "blob"});
+          
+          // Trigger download
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = "ProAI_Bridge.rbz";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+      } catch (err) {
+          console.error("Failed to create .rbz", err);
+          alert("Failed to package extension. Please try downloading the .rb file directly.");
+      } finally {
+          setIsZipping(false);
+      }
   };
 
   // Save custom key to local storage
@@ -1040,42 +1080,35 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                    <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
                       <div className="flex items-start gap-3">
                           <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
-                             <Camera className="w-5 h-5" />
+                             <Package className="w-5 h-5" />
                           </div>
                           <div className="space-y-1">
                              <h4 className="text-sm font-semibold text-white">1. Download & Install</h4>
                              <p className="text-xs text-gray-400 leading-relaxed">
-                                Get the <code>.rb</code> file and place it in your SketchUp Plugins folder.
+                                Get the <code>.rbz</code> file and install via <strong>Extension Manager</strong>.
                              </p>
                           </div>
                       </div>
                       
-                      <a 
-                        href="/pro_ai_bridge.rb" 
-                        download="pro_ai_bridge.rb"
-                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-lg text-xs font-bold text-white transition-all shadow-lg"
+                      <button 
+                        onClick={handleDownloadRbz}
+                        disabled={isZipping}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-lg text-xs font-bold text-white transition-all shadow-lg group"
                       >
-                         <Download className="w-4 h-4" />
-                         {t.downloadExtension} (.rb)
-                      </a>
+                         {isZipping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />}
+                         {isZipping ? 'Packaging...' : 'Download Plugin (.rbz)'}
+                      </button>
 
                       <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800">
                           <div className="flex items-center gap-2 text-xs font-semibold text-gray-300 mb-2">
                               <FolderOpen className="w-3.5 h-3.5" />
-                              Installation Path:
+                              Installation:
                           </div>
                           <div className="space-y-2">
                               <div>
-                                  <p className="text-[10px] text-gray-500 uppercase font-bold">Windows</p>
-                                  <code className="block text-[10px] bg-black/30 p-1.5 rounded text-gray-400 mt-1 select-all font-mono break-all">
-                                      %AppData%\SketchUp\SketchUp 20xx\SketchUp\Plugins
-                                  </code>
-                              </div>
-                              <div>
-                                  <p className="text-[10px] text-gray-500 uppercase font-bold">Mac</p>
-                                  <code className="block text-[10px] bg-black/30 p-1.5 rounded text-gray-400 mt-1 select-all font-mono break-all">
-                                      ~/Library/Application Support/SketchUp 20xx/SketchUp/Plugins
-                                  </code>
+                                  <p className="text-[10px] text-gray-400 leading-relaxed">
+                                      Open SketchUp > <strong>Extensions</strong> > <strong>Extension Manager</strong> > Click <strong>Install Extension</strong> > Select the <code>.rbz</code> file.
+                                  </p>
                               </div>
                           </div>
                       </div>
@@ -1087,7 +1120,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                           <div className="space-y-1">
                              <h4 className="text-sm font-semibold text-white">2. Enable Toolbar</h4>
                              <p className="text-xs text-gray-400 leading-relaxed">
-                                Restart SketchUp. Go to <strong>View {'>'} Toolbars</strong> and check <strong>"Professional AI"</strong>.
+                                Restart SketchUp if needed. Go to <strong>View {'>'} Toolbars</strong> and check <strong>"Professional AI"</strong>.
                              </p>
                           </div>
                       </div>
