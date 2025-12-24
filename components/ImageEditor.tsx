@@ -440,8 +440,13 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
           const response = await fetch('/pro_ai_bridge.rb');
           if (!response.ok) throw new Error("Could not fetch Ruby script");
           
-          const scriptContent = await response.text();
+          let scriptContent = await response.text();
           
+          // --- INJECT CURRENT URL ---
+          // This replaces the placeholder in the Ruby script with the actual current URL
+          const currentUrl = window.location.origin;
+          scriptContent = scriptContent.replace("APP_URL_PLACEHOLDER", currentUrl);
+
           // Create a new Zip file
           const zip = new JSZip();
           
