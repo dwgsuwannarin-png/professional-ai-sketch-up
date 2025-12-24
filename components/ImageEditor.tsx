@@ -1107,7 +1107,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                           <div className="space-y-2">
                               <div>
                                   <p className="text-[10px] text-gray-400 leading-relaxed">
-                                      Open SketchUp {'>'} <strong>Extensions</strong> {'>'} <strong>Extension Manager</strong> {'>'} Click <strong>Install Extension</strong> {'>'} Select the <code>.rbz</code> file.
+                                      Open SketchUp &gt; <strong>Extensions</strong> &gt; <strong>Extension Manager</strong> &gt; Click <strong>Install Extension</strong> &gt; Select the <code>.rbz</code> file.
                                   </p>
                               </div>
                           </div>
@@ -1120,7 +1120,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ user, onLogout, onBack
                           <div className="space-y-1">
                              <h4 className="text-sm font-semibold text-white">2. Enable Toolbar</h4>
                              <p className="text-xs text-gray-400 leading-relaxed">
-                                Restart SketchUp if needed. Go to <strong>View {'>'} Toolbars</strong> and check <strong>"Professional AI"</strong>.
+                                Restart SketchUp if needed. Go to <strong>View &gt; Toolbars</strong> and check <strong>"Professional AI"</strong>.
                              </p>
                           </div>
                       </div>
